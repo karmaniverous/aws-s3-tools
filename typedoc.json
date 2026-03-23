@@ -1,0 +1,43 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "highlightLanguages": [
+    "bash",
+    "console",
+    "css",
+    "html",
+    "javascript",
+    "json",
+    "jsonc",
+    "json5",
+    "md",
+    "tsx",
+    "typescript",
+    "yaml",
+    "yml"
+  ],
+  "hostedBaseUrl": "https://docs.karmanivero.us/aws-s3-tools",
+  "navigationLinks": {
+    "GitHub": "https://github.com/karmaniverous/aws-s3-tools"
+  },
+  "out": "./docs/",
+  "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
+  "projectDocuments": [
+    "./guides/aws-s3-tools.md",
+    "./guides/s3-plugin.md",
+    "./CHANGELOG.md"
+  ],
+  "replaceText": {
+    "replacements": [
+      {
+        "pattern": "<!-- TYPEDOC_EXCLUDE -->.*?<!-- /TYPEDOC_EXCLUDE -->",
+        "flags": "gis",
+        "replace": ""
+      }
+    ]
+  },
+  "searchInComments": true,
+  "searchInDocuments": true,
+  "validation": {
+    "notDocumented": true
+  }
+}
