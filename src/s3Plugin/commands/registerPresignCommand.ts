@@ -14,6 +14,7 @@
 import {
   buildSpawnEnv,
   dotenvExpand,
+  silentLogger,
   toNumber,
 } from '@karmaniverous/get-dotenv';
 import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
@@ -81,10 +82,10 @@ export const registerPresignCommand = ({
 
       const expiresIn = toNumber(opts.expiresIn) ?? 900;
       const region = getAwsRegion(ctx);
+      const sdkLogger = bag.debug ? console : silentLogger;
 
       const tools = new AwsS3Tools({
-        clientConfig: { ...(region ? { region } : {}), logger },
-        xray: bag.debug ? 'off' : 'auto',
+        clientConfig: { ...(region ? { region } : {}), logger: sdkLogger },
       });
 
       let url: string;

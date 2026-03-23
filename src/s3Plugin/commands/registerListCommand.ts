@@ -9,7 +9,11 @@
  * - Print results as an aligned table (key, size, lastModified).
  */
 
-import { buildSpawnEnv, dotenvExpand } from '@karmaniverous/get-dotenv';
+import {
+  buildSpawnEnv,
+  dotenvExpand,
+  silentLogger,
+} from '@karmaniverous/get-dotenv';
 import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
 import { getAwsRegion } from '@karmaniverous/get-dotenv/plugins/aws';
 
@@ -55,10 +59,10 @@ export const registerListCommand = ({
       }
 
       const region = getAwsRegion(ctx);
+      const sdkLogger = bag.debug ? console : silentLogger;
 
       const tools = new AwsS3Tools({
-        clientConfig: { ...(region ? { region } : {}), logger },
-        xray: bag.debug ? 'off' : 'auto',
+        clientConfig: { ...(region ? { region } : {}), logger: sdkLogger },
       });
 
       logger.info(
