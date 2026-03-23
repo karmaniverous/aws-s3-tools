@@ -71,13 +71,15 @@ export const registerPresignCommand = ({
 
       if (!bucket) {
         throw new Error(
-          'bucket is required. Pass --bucket or set $S3_BUCKET_NAME.',
+          'The --bucket option is required. Provide a bucket name via --bucket or set the $S3_BUCKET_NAME environment variable.',
         );
       }
 
       const method = opts.method.toLowerCase();
       if (method !== 'get' && method !== 'put') {
-        throw new Error(`--method must be 'get' or 'put'. Got: '${method}'.`);
+        throw new Error(
+          `--method must be 'get' or 'put'. Got: '${method}'. Valid values are 'get' or 'put'.`,
+        );
       }
 
       const expiresIn = toNumber(opts.expiresIn) ?? 900;

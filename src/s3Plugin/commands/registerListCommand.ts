@@ -54,7 +54,7 @@ export const registerListCommand = ({
 
       if (!bucket) {
         throw new Error(
-          'bucket is required. Pass --bucket or set $S3_BUCKET_NAME.',
+          'The --bucket option is required. Provide a bucket name via --bucket or set the $S3_BUCKET_NAME environment variable.',
         );
       }
 
