@@ -34,6 +34,43 @@ import {
 } from '@karmaniverous/aws-xray-tools';
 import { assertLogger, type Logger } from '@karmaniverous/get-dotenv';
 
+/** AWS API limit for DeleteObjects: max 1000 keys per request. */
+const DELETE_OBJECTS_MAX_KEYS = 1000;
+
+/** AWS API limit for ListObjectsV2: max 1000 keys per page. */
+const LIST_OBJECTS_MAX_KEYS_PER_PAGE = 1000;
+
+/**
+ * Resolve a numeric env var within a valid range.
+ *
+ * @param envVar - Environment variable name.
+ * @param min - Minimum allowed value (inclusive).
+ * @param max - Maximum allowed value (inclusive).
+ * @param defaultValue - Default when env var is not set.
+ * @returns Resolved value.
+ * @throws If the env var is set but outside the valid range or not a number.
+ */
+function resolveEnvInt(
+  envVar: string,
+  min: number,
+  max: number,
+  defaultValue: number,
+): number {
+  const raw = process.env[envVar];
+  if (raw === undefined || raw === '') return defaultValue;
+
+  const parsed = Number(raw);
+  if (Number.isNaN(parsed) || !Number.isInteger(parsed)) {
+    throw new Error(`${envVar} must be an integer. Got: "${raw}".`);
+  }
+  if (parsed < min || parsed > max) {
+    throw new Error(
+      `${envVar} must be between ${String(min)} and ${String(max)}. Got: ${String(parsed)}.`,
+    );
+  }
+  return parsed;
+}
+
 /** Options for {@link AwsS3Tools} construction. */
 export interface AwsS3ToolsOptions {
   /**
@@ -208,6 +245,12 @@ export class AwsS3Tools {
    */
   async listAllObjects(opts: ListAllObjectsOptions): Promise<_Object[]> {
     const { bucket, prefix, maxKeys, maxPages } = opts;
+    const maxKeysPerPage = resolveEnvInt(
+      'S3_LIST_OBJECTS_MAX_KEYS_PER_PAGE',
+      1,
+      LIST_OBJECTS_MAX_KEYS_PER_PAGE,
+      LIST_OBJECTS_MAX_KEYS_PER_PAGE,
+    );
     const allObjects: _Object[] = [];
     let continuationToken: string | undefined;
     let pageNumber = 0;
@@ -225,6 +268,7 @@ export class AwsS3Tools {
       const res = await this.client.send(
         new ListObjectsV2Command({
           Bucket: bucket,
+          MaxKeys: maxKeysPerPage,
           ...(prefix ? { Prefix: prefix } : {}),
           ...(continuationToken
             ? { ContinuationToken: continuationToken }
@@ -290,11 +334,16 @@ export class AwsS3Tools {
       `Deleting ${String(objects.length)} object(s) under s3://${bucket}/${prefix}...`,
     );
 
-    const BATCH_SIZE = 1000;
+    const batchSize = resolveEnvInt(
+      'S3_DELETE_OBJECTS_BATCH_SIZE',
+      1,
+      DELETE_OBJECTS_MAX_KEYS,
+      DELETE_OBJECTS_MAX_KEYS,
+    );
     let deleted = 0;
 
-    for (let i = 0; i < objects.length; i += BATCH_SIZE) {
-      const batch = objects.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < objects.length; i += batchSize) {
+      const batch = objects.slice(i, i + batchSize);
       const identifiers = batch
         .filter((o) => o.Key !== undefined)
         .map((o) => ({ Key: o.Key! }));
