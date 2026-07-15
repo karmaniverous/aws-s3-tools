@@ -6,12 +6,6 @@ dist/
 .rollup.cache/
 .tsbuildinfo
 
-# Environment files
-.env
-.env.*
-!.env.template
-!.env.*.template
-
 # IDE
 .vscode/
 .idea/
