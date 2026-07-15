@@ -1,0 +1,17 @@
+
+> @karmaniverous/aws-s3-tools@0.1.0 test
+> vitest run --no-color
+
+
+ RUN  v4.1.10 D:/repos/karmaniverous/aws-s3-tools
+
+ ✓ src/s3Tools/awsError.test.ts (10 tests) 10ms
+ ✓ src/s3Plugin/s3PluginConfig.test.ts (5 tests) 9ms
+ ✓ src/s3Tools/AwsS3Tools.test.ts (18 tests) 36ms
+ ✓ src/index.test.ts (2 tests) 4ms
+
+ Test Files  4 passed (4)
+      Tests  35 passed (35)
+   Start at  08:08:03
+   Duration  2.05s (transform 296ms, setup 0ms, import 2.42s, tests 59ms, environment 3.22s)
+
