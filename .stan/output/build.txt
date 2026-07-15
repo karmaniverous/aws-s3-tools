@@ -1,0 +1,13 @@
+
+> @karmaniverous/aws-s3-tools@0.1.0 build
+> rimraf dist && getdotenv -a -v NO_COLOR=1 cmd tsx ./node_modules/rollup/dist/bin/rollup --config rollup.config.ts
+
+
+src/index.ts → dist/mjs...
+created dist/mjs in 3s
+
+src/index.ts → dist/index.d.ts...
+created dist/index.d.ts in 2.2s
+
+src/cli/aws-s3-tools/index.ts → dist/cli/aws-s3-tools...
+created dist/cli/aws-s3-tools in 2.3s
