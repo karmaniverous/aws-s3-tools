@@ -1,0 +1,188 @@
+/** Verify packed runtime and strict TypeScript consumption without get-dotenv. */
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+const npmCli = process.env.npm_execpath;
+if (!npmCli) throw new Error('npm_execpath is required');
+const mode = process.argv[2];
+if (mode !== 'runtime' && mode !== 'types') {
+  throw new Error('usage: verify-packed-package.ts <runtime|types>');
+}
+
+const root = resolve(import.meta.dirname, '..');
+const localPackage = JSON.parse(
+  readFileSync(resolve(root, 'package.json'), 'utf8'),
+) as {
+  devDependencies: Record<string, string>;
+  peerDependencies: Record<string, string>;
+};
+const getDotenvPeerRange =
+  localPackage.peerDependencies['@karmaniverous/get-dotenv'];
+if (!getDotenvPeerRange)
+  throw new Error('get-dotenv peer dependency is required');
+const fixture = mkdtempSync(join(tmpdir(), `aws-s3-${mode}-`));
+const runNpm = (args: string[]): string =>
+  execFileSync(process.execPath, [npmCli, ...args], {
+    cwd: fixture,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
+const runNode = (args: string[]) =>
+  spawnSync(process.execPath, args, { cwd: fixture, encoding: 'utf8' });
+
+try {
+  const packed = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [npmCli, 'pack', '--json', '--pack-destination', fixture],
+      {
+        cwd: root,
+        encoding: 'utf8',
+      },
+    ),
+  ) as Array<{ filename: string }>;
+  const filename = packed[0]?.filename;
+  if (!filename) throw new Error('npm pack did not produce a tarball');
+
+  writeFileSync(
+    join(fixture, 'package.json'),
+    JSON.stringify({ private: true, type: 'module' }),
+  );
+  runNpm([
+    'install',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    '--no-package-lock',
+    join(fixture, filename),
+  ]);
+
+  const getDotenvPath = join(
+    fixture,
+    'node_modules',
+    '@karmaniverous',
+    'get-dotenv',
+    'package.json',
+  );
+  if (existsSync(getDotenvPath))
+    throw new Error('optional get-dotenv peer was installed');
+
+  if (mode === 'runtime') {
+    const main = runNode([
+      '--input-type=module',
+      '--eval',
+      [
+        "const m = await import('@karmaniverous/aws-s3-tools');",
+        "const tools = new m.AwsS3Tools({ xray: 'off' });",
+        "if (tools.xray.enabled || typeof m.assertLogger !== 'function') process.exit(2);",
+      ].join('\n'),
+    ]);
+    if (main.status !== 0)
+      throw new Error(`main entry failed without get-dotenv:\n${main.stderr}`);
+
+    const plugin = runNode([
+      '--input-type=module',
+      '--eval',
+      "await import('@karmaniverous/aws-s3-tools/get-dotenv');",
+    ]);
+    if (
+      plugin.status === 0 ||
+      !plugin.stderr.includes('ERR_MODULE_NOT_FOUND') ||
+      !plugin.stderr.includes("'@karmaniverous/get-dotenv'")
+    ) {
+      throw new Error(
+        `get-dotenv entry should fail on the missing peer:\n${plugin.stderr}`,
+      );
+    }
+
+    const packageRoot = join(
+      fixture,
+      'node_modules',
+      '@karmaniverous',
+      'aws-s3-tools',
+    );
+    const bin = runNode([
+      join(packageRoot, 'dist', 'cli', 'aws-s3-tools', 'index.js'),
+      '--help',
+    ]);
+    const getDotenv = `@karmaniverous/get-dotenv@${getDotenvPeerRange}`;
+    const expectedHint = [
+      `aws-s3-tools needs @karmaniverous/get-dotenv ${getDotenvPeerRange}. Install it:`,
+      `  local:  npm i -D ${getDotenv}`,
+      `  global: npm i -g ${getDotenv}`,
+      `  npx:    npx -p ${getDotenv} -p @karmaniverous/aws-s3-tools aws-s3-tools`,
+    ].join('\n');
+    if (
+      bin.status !== 1 ||
+      bin.stderr.trim() !== expectedHint ||
+      bin.stdout !== ''
+    ) {
+      throw new Error(
+        `bin did not print the install hint and exit 1:\n${bin.stderr}${bin.stdout}`,
+      );
+    }
+  } else {
+    runNpm([
+      'install',
+      '--save-dev',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--no-package-lock',
+      `@types/node@${localPackage.devDependencies['@types/node']}`,
+      `typescript@${localPackage.devDependencies.typescript}`,
+    ]);
+    if (existsSync(getDotenvPath))
+      throw new Error('type dependencies installed the optional peer');
+
+    writeFileSync(
+      join(fixture, 'index.ts'),
+      [
+        "import { AwsS3Tools, assertLogger, type Logger, type ProcessEnv } from '@karmaniverous/aws-s3-tools';",
+        'const logger: Logger = assertLogger(console);',
+        "const env: ProcessEnv = { VALUE: 'ok', OPTIONAL: undefined };",
+        "const tools = new AwsS3Tools({ clientConfig: { logger }, xray: 'off' });",
+        'void env;',
+        'void tools;',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(fixture, 'tsconfig.json'),
+      JSON.stringify({
+        compilerOptions: {
+          module: 'NodeNext',
+          moduleResolution: 'NodeNext',
+          noEmit: true,
+          skipLibCheck: false,
+          strict: true,
+          target: 'ES2022',
+          types: ['node'],
+        },
+        include: ['index.ts'],
+      }),
+    );
+    const tsc = runNode([
+      join(fixture, 'node_modules', 'typescript', 'bin', 'tsc'),
+      '--project',
+      'tsconfig.json',
+      '--pretty',
+      'false',
+    ]);
+    if (tsc.status !== 0)
+      throw new Error(
+        `strict packed typecheck failed:\n${tsc.stdout}${tsc.stderr}`,
+      );
+  }
+
+  console.log(`verify:${mode}: packed package passed without get-dotenv`);
+} finally {
+  rmSync(fixture, { recursive: true, force: true });
+}

@@ -5,7 +5,7 @@
  * - CLI flags override config defaults.
  */
 
-import { z } from '@karmaniverous/get-dotenv/cliHost';
+import { z } from 'zod';
 
 /**
  * Schema for `aws s3` plugin configuration.
@@ -21,4 +21,5 @@ export const s3PluginConfigSchema = z.object({
   bucket: z.string().optional(),
 });
 
+/** Validated configuration for the get-dotenv S3 plugin. */
 export type S3PluginConfig = z.output<typeof s3PluginConfigSchema>;

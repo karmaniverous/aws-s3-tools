@@ -32,7 +32,8 @@ import {
   type XrayMode,
   type XrayState,
 } from '@karmaniverous/aws-xray-tools';
-import { assertLogger, type Logger } from '@karmaniverous/get-dotenv';
+
+import { assertLogger, type Logger } from '../logger';
 
 /** AWS API limit for DeleteObjects: max 1000 keys per request. */
 const DELETE_OBJECTS_MAX_KEYS = 1000;
