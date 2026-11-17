@@ -1,16 +1,11 @@
 /**
- * This is the main entry point for the library.
+ * Main package entry, independent of the optional get-dotenv peer.
  *
  * @packageDocumentation
  */
 
-/**
- * Requirements addressed:
- * - Export a public `AwsS3Tools`.
- * - Export the get-dotenv `s3Plugin` for mounting under `aws`.
- */
-
-// Layer 1 — Runtime (used by Lambda handlers)
+export { assertLogger, type Logger } from './logger';
+export type { ProcessEnv } from './processEnv';
 export {
   AwsS3Tools,
   type AwsS3ToolsOptions,
@@ -19,6 +14,3 @@ export {
   type PresignedGetUrlOptions,
   type PresignedPutUrlOptions,
 } from './s3Tools/AwsS3Tools';
-
-// Layer 2 — Plugin (used by smoz CLI composition)
-export { s3Plugin } from './s3Plugin/s3Plugin';

@@ -1,27 +1,13 @@
 /**
- * Standalone CLI for aws-s3-tools.
+ * Standalone bin entry. The get-dotenv-backed runner is dynamically imported
+ * so the optional peer can fail with an actionable installation hint.
  *
- * Embeds get-dotenv host with s3Plugin pre-mounted under awsPlugin.
+ * @packageDocumentation
  */
 
-import { createCli } from '@karmaniverous/get-dotenv/cli';
-import {
-  awsPlugin,
-  batchPlugin,
-  cmdPlugin,
-  initPlugin,
-} from '@karmaniverous/get-dotenv/plugins';
+import { launch } from './launcher';
 
-import { s3Plugin } from '../../s3Plugin/s3Plugin';
-
-await createCli({
-  alias: 'aws-s3-tools',
-  compose: (program) =>
-    program
-      .use(
-        cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
-      )
-      .use(batchPlugin())
-      .use(awsPlugin().use(s3Plugin()))
-      .use(initPlugin()),
-})();
+await launch(() => import('./run'), {
+  bin: 'aws-s3-tools',
+  pkg: '@karmaniverous/aws-s3-tools',
+});

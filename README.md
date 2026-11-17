@@ -18,7 +18,13 @@ X-Ray-enabled AWS S3 client wrapper and get-dotenv CLI plugin for listing object
 npm i @karmaniverous/aws-s3-tools
 ```
 
-This package is ESM-only (Node >= 22).
+For the plugin or standalone CLI, also install the optional peer:
+
+```bash
+npm i -D @karmaniverous/get-dotenv@^8.0.0-0
+```
+
+The programmatic package root does not load get-dotenv. This package is ESM-only (Node >= 22.12.0).
 
 ## Quick start (programmatic)
 
@@ -70,12 +76,12 @@ Mount in your get-dotenv CLI:
 ```ts
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
-import { s3Plugin } from '@karmaniverous/aws-s3-tools';
+import { s3Plugin } from '@karmaniverous/aws-s3-tools/get-dotenv';
 
 await createCli({
   alias: 'smoz',
-  compose: (program) =>
-    program.use(awsPlugin().use(s3Plugin())),
+  importMetaUrl: import.meta.url,
+  compose: (program) => program.use(awsPlugin().use(s3Plugin())),
 })();
 ```
 
@@ -90,6 +96,8 @@ smoz --env dev aws s3 presign --bucket my-bucket --key path/to/file.txt
 ```
 
 ## Quick start (standalone CLI)
+
+The bin prints local, global, and `npx` installation routes and exits with status 1 when the optional get-dotenv peer is absent.
 
 ```bash
 # List objects

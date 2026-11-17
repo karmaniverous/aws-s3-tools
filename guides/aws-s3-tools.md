@@ -6,6 +6,8 @@ title: AwsS3Tools
 
 `AwsS3Tools` is an X-Ray-enabled wrapper around the AWS S3 SDK v3 client. It provides composite convenience methods for operations that compose multiple SDK calls, while exposing the raw client for single-operation use.
 
+The ESM package root requires Node >= 22.12.0 and works without the optional get-dotenv peer installed.
+
 ## Constructor
 
 ```ts
@@ -23,17 +25,17 @@ const tools = new AwsS3Tools({
 ### Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `clientConfig` | `S3ClientConfig` | `{}` | AWS SDK v3 client config (region, credentials, logger, etc.) |
 | `xray` | `'auto' \| 'on' \| 'off'` | `'auto'` | X-Ray capture mode. `auto` enables only when `AWS_XRAY_DAEMON_ADDRESS` is set. |
 
 ### Public properties
 
 | Property | Type | Description |
-|----------|------|-------------|
+| --- | --- | --- |
 | `client` | `S3Client` | The effective SDK client (X-Ray-captured when enabled). |
 | `clientConfig` | `S3ClientConfig` | The resolved config used to build the client. |
-| `logger` | `Logger` | Validated logger instance. |
+| `logger` | `Logger` | Validated logger instance, using this package's local public contract. |
 | `xray` | `XrayState` | Materialized X-Ray state (`{ mode, enabled, daemonAddress? }`). |
 
 ## Convenience methods
@@ -52,11 +54,11 @@ const url = await tools.getPresignedGetUrl({
 console.log('Download URL:', url);
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `bucket` | `string` | required | S3 bucket name |
-| `key` | `string` | required | S3 object key |
-| `expiresIn` | `number` | `900` | URL expiry in seconds |
+| Option      | Type     | Default  | Description           |
+| ----------- | -------- | -------- | --------------------- |
+| `bucket`    | `string` | required | S3 bucket name        |
+| `key`       | `string` | required | S3 object key         |
+| `expiresIn` | `number` | `900`    | URL expiry in seconds |
 
 ### `getPresignedPutUrl(options)`
 
@@ -66,19 +68,19 @@ Generate a pre-signed URL for uploading an object (HTTP PUT).
 const url = await tools.getPresignedPutUrl({
   bucket: 'my-bucket',
   key: 'uploads/new-file.txt',
-  expiresIn: 3600,       // optional
+  expiresIn: 3600, // optional
   contentType: 'text/plain', // optional
 });
 
 console.log('Upload URL:', url);
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `bucket` | `string` | required | S3 bucket name |
-| `key` | `string` | required | S3 object key |
-| `expiresIn` | `number` | `900` | URL expiry in seconds |
-| `contentType` | `string` | — | Content-Type for the upload |
+| Option        | Type     | Default  | Description                 |
+| ------------- | -------- | -------- | --------------------------- |
+| `bucket`      | `string` | required | S3 bucket name              |
+| `key`         | `string` | required | S3 object key               |
+| `expiresIn`   | `number` | `900`    | URL expiry in seconds       |
+| `contentType` | `string` | —        | Content-Type for the upload |
 
 ### `listAllObjects(options)`
 
@@ -87,9 +89,9 @@ Auto-paginated object listing with guardrails.
 ```ts
 const objects = await tools.listAllObjects({
   bucket: 'my-bucket',
-  prefix: 'uploads/',    // optional key prefix
-  maxKeys: 1000,         // stop after 1000 objects
-  maxPages: 10,          // stop after 10 pages
+  prefix: 'uploads/', // optional key prefix
+  maxKeys: 1000, // stop after 1000 objects
+  maxPages: 10, // stop after 10 pages
 });
 
 for (const obj of objects) {
@@ -97,12 +99,12 @@ for (const obj of objects) {
 }
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `bucket` | `string` | required | S3 bucket name |
-| `prefix` | `string` | — | Key prefix filter |
-| `maxKeys` | `number` | — | Maximum total objects to return |
-| `maxPages` | `number` | — | Maximum pages to fetch (safety valve) |
+| Option     | Type     | Default  | Description                           |
+| ---------- | -------- | -------- | ------------------------------------- |
+| `bucket`   | `string` | required | S3 bucket name                        |
+| `prefix`   | `string` | —        | Key prefix filter                     |
+| `maxKeys`  | `number` | —        | Maximum total objects to return       |
+| `maxPages` | `number` | —        | Maximum pages to fetch (safety valve) |
 
 ### `deleteAllUnderPrefix(options)`
 
@@ -118,11 +120,11 @@ const deleted = await tools.deleteAllUnderPrefix({
 console.log(`Deleted ${deleted} objects.`);
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `bucket` | `string` | required | S3 bucket name |
-| `prefix` | `string` | required | Key prefix (must be non-empty) |
-| `force` | `boolean` | `false` | Must be `true` to proceed |
+| Option   | Type      | Default  | Description                    |
+| -------- | --------- | -------- | ------------------------------ |
+| `bucket` | `string`  | required | S3 bucket name                 |
+| `prefix` | `string`  | required | Key prefix (must be non-empty) |
+| `force`  | `boolean` | `false`  | Must be `true` to proceed      |
 
 ## Escape hatch
 

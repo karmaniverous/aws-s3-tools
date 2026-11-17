@@ -27,11 +27,18 @@ src/
       registerListCommand.ts
       registerPresignCommand.ts
 
+  get-dotenv/          ← Optional-peer public subpath
+    index.ts             Exports s3Plugin and its config schema
+
   cli/
     aws-s3-tools/       ← Layer 3: Standalone CLI
-      index.ts            Embeds get-dotenv host + s3Plugin
+      index.ts            Dependency-free launcher
+      launcher.ts         Missing-peer detection and install hint
+      run.ts              get-dotenv-backed runner with importMetaUrl
 
-  index.ts              ← Public API surface
+  logger.ts             ← Local Logger contract and validation
+  processEnv.ts         ← Local ProcessEnv contract
+  index.ts              ← Core public API surface (no get-dotenv)
 ```
 
 ## Key conventions
@@ -53,21 +60,32 @@ src/
 ## Key files
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | `src/s3Tools/AwsS3Tools.ts` | Core class: constructor, `getPresignedGetUrl`, `getPresignedPutUrl`, `listAllObjects`, `deleteAllUnderPrefix` |
 | `src/s3Tools/awsError.ts` | `isAwsErrorOfType` factory for typed AWS error matching |
 | `src/s3Plugin/s3Plugin.ts` | Plugin registration, ns: `'s3'`, mounts under `aws` |
 | `src/s3Plugin/s3PluginConfig.ts` | Zod schema for plugin config (`bucket`) |
 | `src/s3Plugin/commands/registerListCommand.ts` | `aws s3 list` implementation |
 | `src/s3Plugin/commands/registerPresignCommand.ts` | `aws s3 presign` implementation |
-| `src/cli/aws-s3-tools/index.ts` | Standalone CLI host |
-| `src/index.ts` | Public API surface (all exports) |
+| `src/get-dotenv/index.ts` | Optional plugin public entry (`@karmaniverous/aws-s3-tools/get-dotenv`) |
+| `src/cli/aws-s3-tools/index.ts` | Dependency-free standalone CLI launcher |
+| `src/cli/aws-s3-tools/run.ts` | get-dotenv host with `importMetaUrl` |
+| `src/index.ts` | Core public API surface, independent of get-dotenv |
 
 ## Testing approach
 
 - Unit tests use `vi.mock` to replace `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner`.
 - Tests cover: constructor options, X-Ray mode, pagination guardrails, batch delete, presign generation.
 - Run: `npm test`
+
+## Public imports
+
+```ts
+import { AwsS3Tools } from '@karmaniverous/aws-s3-tools';
+import { s3Plugin } from '@karmaniverous/aws-s3-tools/get-dotenv';
+```
+
+The second import requires the optional `@karmaniverous/get-dotenv` peer. The package root does not.
 
 ## CLI usage
 

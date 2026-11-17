@@ -16,7 +16,10 @@ If you want the programmatic API instead, see the [AwsS3Tools guide](aws-s3-tool
 
 ```bash
 npm i @karmaniverous/aws-s3-tools
+npm i -D @karmaniverous/get-dotenv@^8.0.0-0
 ```
+
+get-dotenv is an optional peer so programmatic users do not install it unnecessarily. The plugin is exported only from the `/get-dotenv` subpath, and the standalone bin prints the supported install routes when the peer is absent.
 
 You can either:
 
@@ -44,10 +47,11 @@ Mount the plugin under `aws`:
 ```ts
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
-import { s3Plugin } from '@karmaniverous/aws-s3-tools';
+import { s3Plugin } from '@karmaniverous/aws-s3-tools/get-dotenv';
 
 await createCli({
   alias: 'smoz',
+  importMetaUrl: import.meta.url,
   compose: (program) => program.use(awsPlugin().use(s3Plugin())),
 })();
 ```
@@ -64,7 +68,7 @@ List all objects in an S3 bucket or prefix.
 ### CLI options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| --- | --- | --- |
 | `-b, --bucket <string>` | `$S3_BUCKET_NAME` | S3 bucket name (supports `$VAR` expansion) |
 | `-p, --prefix <string>` | — | Key prefix filter (optional) |
 
@@ -96,7 +100,7 @@ Generate a pre-signed S3 URL for GET or PUT operations.
 ### CLI options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| --- | --- | --- |
 | `-b, --bucket <string>` | `$S3_BUCKET_NAME` | S3 bucket name (supports `$VAR` expansion) |
 | `-k, --key <string>` | required | S3 object key |
 | `-m, --method <string>` | `get` | HTTP method: `get` or `put` |
@@ -132,8 +136,8 @@ Configure defaults in your get-dotenv config under `plugins['aws/s3']`:
 
 Full config schema (all optional):
 
-| Key | Type | Description |
-|-----|------|-------------|
+| Key      | Type     | Description                                     |
+| -------- | -------- | ----------------------------------------------- |
 | `bucket` | `string` | Default bucket name (supports `$VAR` expansion) |
 
 CLI flags always override config values. Config values override defaults.
