@@ -2,10 +2,24 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.0](https://github.com/karmaniverous/aws-s3-tools/compare/0.1.1...0.2.0)
+
+- [GH-9] Support get-dotenv 8 package contract [`#12`](https://github.com/karmaniverous/aws-s3-tools/pull/12)
+- [GH-9] feat: support get-dotenv 8 package contract [`406a827`](https://github.com/karmaniverous/aws-s3-tools/commit/406a82746831c36f1f2e256853cfc12591f84386)
+- [GH-9] chore(deps): approve dependency install scripts [`c519f91`](https://github.com/karmaniverous/aws-s3-tools/commit/c519f91433554b86a2d7eaba823193df3c0278bf)
+- [GH-9] fix: address independent review findings [`089b806`](https://github.com/karmaniverous/aws-s3-tools/commit/089b806fb64c6915a8128217684d96b1e5070183)
+- removed stan [`9eb8685`](https://github.com/karmaniverous/aws-s3-tools/commit/9eb8685e773aef44ccdf119d1b9b519f993e4d78)
+- npm audit fix [`7cc17c4`](https://github.com/karmaniverous/aws-s3-tools/commit/7cc17c4ee914d787fdff62211a32326658b5b91a)
+- [GH-9] chore(deps): require released get-dotenv ^8.0.0 [`d08a30c`](https://github.com/karmaniverous/aws-s3-tools/commit/d08a30c444daff1157c2fc9cdce3a4e7d20a792a)
+- [GH-9] chore: normalize repository line endings [`c048dba`](https://github.com/karmaniverous/aws-s3-tools/commit/c048dbae0076ec0bca731a447b0062042e88f20e)
+
 #### [0.1.1](https://github.com/karmaniverous/aws-s3-tools/compare/0.1.0...0.1.1)
+
+> 15 July 2026
 
 - chore: update dependencies [`#10`](https://github.com/karmaniverous/aws-s3-tools/pull/10)
 - cleanup [`208695c`](https://github.com/karmaniverous/aws-s3-tools/commit/208695cdd484a9ce6a7cb3d12b85cd26acfa7df3)
+- chore: release v0.1.1 [`6d76d4d`](https://github.com/karmaniverous/aws-s3-tools/commit/6d76d4dafe2824cf7bea84e96ed96e5b57d11a75)
 
 #### 0.1.0
 
