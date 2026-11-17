@@ -16,5 +16,8 @@ describe('createAwsS3CliOptions', () => {
 
     expect(options.compose?.(program as never)).toBe(program);
     expect(program.use).toHaveBeenCalledTimes(4);
+    expect(
+      program.use.mock.calls.map(([plugin]) => (plugin as { ns?: unknown }).ns),
+    ).toEqual(['cmd', 'batch', 'aws', 'init']);
   });
 });

@@ -72,3 +72,6 @@ jobs:
 
       - name: Package dry run
         run: npm run pack:dry
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev

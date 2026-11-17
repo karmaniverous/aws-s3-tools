@@ -5,12 +5,16 @@
  * @packageDocumentation
  */
 
-const getDotenv = '@karmaniverous/get-dotenv@^8.0.0-0';
+import packageJson from '../../../package.json';
+
+const getDotenvPeerRange =
+  packageJson.peerDependencies['@karmaniverous/get-dotenv'];
+const getDotenv = `@karmaniverous/get-dotenv@${getDotenvPeerRange}`;
 
 /** Build the optional-peer installation hint for a package bin. */
 export const getDotenvInstallHint = (bin: string, pkg: string): string =>
   [
-    `${bin} needs @karmaniverous/get-dotenv ^8.0.0-0. Install it:`,
+    `${bin} needs @karmaniverous/get-dotenv ${getDotenvPeerRange}. Install it:`,
     `  local:  npm i -D ${getDotenv}`,
     `  global: npm i -g ${getDotenv}`,
     `  npx:    npx -p ${getDotenv} -p ${pkg} ${bin}`,
@@ -23,6 +27,7 @@ export const isMissingGetDotenv = (error: unknown): boolean => {
   return (
     code === 'ERR_MODULE_NOT_FOUND' &&
     typeof message === 'string' &&
+    // Node exposes the missing package only in the error message.
     message.includes(`'@karmaniverous/get-dotenv'`)
   );
 };

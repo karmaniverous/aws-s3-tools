@@ -18,6 +18,16 @@ if (mode !== 'runtime' && mode !== 'types') {
 }
 
 const root = resolve(import.meta.dirname, '..');
+const localPackage = JSON.parse(
+  readFileSync(resolve(root, 'package.json'), 'utf8'),
+) as {
+  devDependencies: Record<string, string>;
+  peerDependencies: Record<string, string>;
+};
+const getDotenvPeerRange =
+  localPackage.peerDependencies['@karmaniverous/get-dotenv'];
+if (!getDotenvPeerRange)
+  throw new Error('get-dotenv peer dependency is required');
 const fixture = mkdtempSync(join(tmpdir(), `aws-s3-${mode}-`));
 const runNpm = (args: string[]): string =>
   execFileSync(process.execPath, [npmCli, ...args], {
@@ -103,11 +113,12 @@ try {
       join(packageRoot, 'dist', 'cli', 'aws-s3-tools', 'index.js'),
       '--help',
     ]);
+    const getDotenv = `@karmaniverous/get-dotenv@${getDotenvPeerRange}`;
     const expectedHint = [
-      'aws-s3-tools needs @karmaniverous/get-dotenv ^8.0.0-0. Install it:',
-      '  local:  npm i -D @karmaniverous/get-dotenv@^8.0.0-0',
-      '  global: npm i -g @karmaniverous/get-dotenv@^8.0.0-0',
-      '  npx:    npx -p @karmaniverous/get-dotenv@^8.0.0-0 -p @karmaniverous/aws-s3-tools aws-s3-tools',
+      `aws-s3-tools needs @karmaniverous/get-dotenv ${getDotenvPeerRange}. Install it:`,
+      `  local:  npm i -D ${getDotenv}`,
+      `  global: npm i -g ${getDotenv}`,
+      `  npx:    npx -p ${getDotenv} -p @karmaniverous/aws-s3-tools aws-s3-tools`,
     ].join('\n');
     if (
       bin.status !== 1 ||
@@ -119,9 +130,6 @@ try {
       );
     }
   } else {
-    const localPackage = JSON.parse(
-      readFileSync(resolve(root, 'package.json'), 'utf8'),
-    ) as { devDependencies: Record<string, string> };
     runNpm([
       'install',
       '--save-dev',

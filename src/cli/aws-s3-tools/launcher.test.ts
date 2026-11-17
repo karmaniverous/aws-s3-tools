@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import packageJson from '../../../package.json';
 import { getDotenvInstallHint, isMissingGetDotenv, launch } from './launcher';
 
 const names = {
@@ -7,11 +8,14 @@ const names = {
   pkg: '@karmaniverous/aws-s3-tools',
 };
 
+const getDotenvPeerRange =
+  packageJson.peerDependencies['@karmaniverous/get-dotenv'];
+const getDotenv = `@karmaniverous/get-dotenv@${getDotenvPeerRange}`;
 const expectedHint = [
-  'aws-s3-tools needs @karmaniverous/get-dotenv ^8.0.0-0. Install it:',
-  '  local:  npm i -D @karmaniverous/get-dotenv@^8.0.0-0',
-  '  global: npm i -g @karmaniverous/get-dotenv@^8.0.0-0',
-  '  npx:    npx -p @karmaniverous/get-dotenv@^8.0.0-0 -p @karmaniverous/aws-s3-tools aws-s3-tools',
+  `aws-s3-tools needs @karmaniverous/get-dotenv ${getDotenvPeerRange}. Install it:`,
+  `  local:  npm i -D ${getDotenv}`,
+  `  global: npm i -g ${getDotenv}`,
+  `  npx:    npx -p ${getDotenv} -p @karmaniverous/aws-s3-tools aws-s3-tools`,
 ].join('\n');
 
 const missingGetDotenv = Object.assign(
