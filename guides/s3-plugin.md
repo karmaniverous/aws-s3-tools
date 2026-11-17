@@ -16,7 +16,7 @@ If you want the programmatic API instead, see the [AwsS3Tools guide](aws-s3-tool
 
 ```bash
 npm i @karmaniverous/aws-s3-tools
-npm i -D @karmaniverous/get-dotenv@^8.0.0-0
+npm i -D @karmaniverous/get-dotenv@^8.0.0
 ```
 
 get-dotenv is an optional peer so programmatic users do not install it unnecessarily. The plugin is exported only from the `/get-dotenv` subpath, and the standalone bin prints the supported install routes when the peer is absent.
